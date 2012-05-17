@@ -1,67 +1,55 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Bonfire
+ *
+ * An open source project to allow developers get a jumpstart their development of CodeIgniter applications
+ *
+ * @package   Bonfire
+ * @author    Bonfire Dev Team
+ * @copyright Copyright (c) 2011 - 2012, Bonfire Dev Team
+ * @license   http://guides.cibonfire.com/license.html
+ * @link      http://cibonfire.com
+ * @since     Version 1.0
+ * @filesource
+ */
 
-/*
-	Copyright (c) 2011 Lonnie Ezell
+/**
+ * Array Helpers
+ *
+ * Provides additional functions for working with arrays.
+ *
+ * @package    Bonfire
+ * @subpackage Helpers
+ * @category   Helpers
+ * @author     Bonfire Dev Team
+ * @link       http://guides.cibonfire.com/helpers/array_helpers.html
+ *
+ */
 
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
-	
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
-	
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
-*/
-
-/*
-	File: Array Helper
-	
-	Provides additional functions for working with arrays.
-*/
-
-/*
-	Function: array_index_by_key()
-	
-	When given an array of arrays (or objects) it will return the index of the 
-	sub-array where $key == $value.
-	
-	Given the following array
-	
-	> $array = array(
-	> 	[0] => array(
-	>		'value'	=> 1
-	>	),
-	>	[1] => array(
-	>		'value'	=> 2
-	>	)
-	> );
-	
-	you could find the index of the second array with the command
-	
-	> // Returns 1
-	> array_index_by_key('value', 2, $array);
-	
-	Parameters:
-		$key		- The key to search on
-		$value		- The value the key should be
-		$array		- The array to search through
-		$identical	- Whether to perform a strict type-checked comparison
-		
-	Returns:
-		An INT that is the index of the sub-array, or false.
-*/
-if (!function_exists('array_index_by_key'))
+if ( ! function_exists('array_index_by_key'))
 {
 
+	/**
+	 * When given an array of arrays (or objects) it will return the index of the
+	 * sub-array where $key == $value.
+	 *
+	 * <code>
+	 * $array = array(
+	 *	array('value' => 1),
+	 *	array('value' => 2),
+	 * );
+	 *
+	 * // Returns 1
+	 * array_index_by_key('value', 2, $array);
+	 * </code>
+	 * 
+	 * @param $key mixed The key to search on.
+	 * @param $value The value the key should be
+	 * @param $array array The array to search through
+	 * @param $identical boolean Whether to perform a strict type-checked comparison
+	 *
+	 * @return false|int An INT that is the index of the sub-array, or false.
+	 */
 	function array_index_by_key($key=null, $value=null, $array=null, $identical=false)
 	{	
 		if (empty($key) || empty($value) || !is_array($array))
@@ -81,7 +69,8 @@ if (!function_exists('array_index_by_key'))
 					{
 						return $index;
 					}
-				} else
+				}
+				else
 				{
 					if ($sub_array[$key] == $value)
 					{
@@ -89,9 +78,6 @@ if (!function_exists('array_index_by_key'))
 					}
 				}
 			}
-		}
-	}
-
+		}//end foreach
+	}//end array_index_by_key()
 }
-
-//--------------------------------------------------------------------

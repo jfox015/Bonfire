@@ -2,37 +2,45 @@
 
 <?php if ($this->config->item('migrations_enabled') === false) :?>
 
-	<div class="alert alert-warning">
-		<p><?php echo lang('mig_not_enabled'); ?></p>
+	<div class="alert alert-warning fade in">
+		<a class="close" data-dismiss="alert">&times;</a>
+		<?php echo lang('mig_not_enabled'); ?></p>
 	</div>
 
 <?php else : ?>
 
 	<div class="admin-box">
 		<h3><?php echo $toolbar_title ?></h3>
-	
-		<ul class="nav tabs" data-tabs="tabs">
-			<li class="active"><a href="#app-tab">Application</a></li>
-			<li><a href="#mod-tab">Modules</a></li>
-			<li><a href="#core-tab">Bonfire</a></li>
+
+		<ul class="nav nav-tabs">
+			<li class="active">
+				<a href="#app-tab" data-toggle="tab">Application</a>
+			</li>
+			<li>
+				<a href="#mod-tab" data-toggle="tab">Modules</a>
+			</li>
+			<li>
+				<a href="#core-tab" data-toggle="tab">Bonfire</a>
+			</li>
 		</ul>
-	
+
 		<div class="tab-content">
 			<!-- Application Migrations -->
 			<div class="tab-pane active" id="app-tab">
 				<fieldset>
 				<legend><?php echo lang('mig_app_migrations'); ?></legend>
-	
+
 				<br/>
-				
-				<div class="alert alert-info">
+
+				<div class="alert alert-info fade in">
+					<a class="close" data-dismiss="alert">&times;</a>
 					<?php echo lang('mig_installed_version'); ?> <b><?php echo $installed_version; ?></b> /
 					<?php echo lang('mig_latest_version'); ?> <b><?php echo $latest_version ?></b>
 				</div>
-	
+
 				<?php echo form_open($this->uri->uri_string(), 'class="constrained"'); ?>
 					<input type="hidden" name="core_only" value="0" />
-	
+
 					<?php if (count($app_migrations)) : ?>
 					<p>
 						<?php echo lang('mig_choose_migration'); ?>
@@ -42,24 +50,26 @@
 						<?php endforeach; ?>
 						</select>
 					</p>
-	
+
 					<div class="form-actions">
-						<input type="submit" name="submit" value="<?php echo lang('mig_migrate_button'); ?>" /> or <?php echo anchor(SITE_AREA .'/developer/migrations', lang('bf_action_cancel')); ?>
+						<input type="submit" name="submit" value="<?php echo lang('mig_migrate_button'); ?>" /> or <?php echo anchor(SITE_AREA .'/developer/migrations', '<i class="icon-refresh icon-white">&nbsp;</i>&nbsp;' . lang('bf_action_cancel'), 'class="btn btn-danger"'); ?>
 					</div>
 					<?php else: ?>
-						<div class="alert alert-warning">
+						<div class="alert alert-warning fade in">
+	  						<a class="close" data-dismiss="alert">&times;</a>
+
 							<?php echo lang('mig_no_migrations') ?>
 						</div>
 					<?php endif; ?>
 				<?php echo form_close(); ?>
 				</fieldset>
 			</div>
-	
+
 			<!-- Module Migrations -->
 			<div id="mod-tab" class="tab-pane">
 				<fieldset>
 				<legend><?php echo lang('mig_mod_migrations'); ?></legend>
-	
+
 				<?php if (isset($mod_migrations) && is_array($mod_migrations)) :?>
 					<table class="table table-striped">
 						<thead>
@@ -92,41 +102,43 @@
 									</select>
 								</td>
 								<td style="width: 10em">
-									<input type="submit" name="submit" class="btn" value="Migrate Module" />
+									<input type="submit" name="submit" class="btn btn-primary" value="Migrate Module" />
 								</td>
 							</tr>
 							</form>
 							<?php endforeach; ?>
 						</tbody>
 					</table>
-	
+
 				<?php else : ?>
 					<br/>
-					<div class="alert alert-info">
+					<div class="alert alert-info fade in ">
+  						<a class="close" data-dismiss="alert">&times;</a>
 						No modules have any migrations available.
 					</div>
 				<?php endif; ?>
 				</fieldset>
 			</div>
-	
+
 			<!-- Bonfire Migrations -->
 			<div id="core-tab" class="tab-pane">
-			
+
 				<fieldset>
 					<legend><?php echo lang('mig_core_migrations'); ?></legend>
-					
+
 					<br/>
-					<div class="alert alert-info">
+					<div class="alert alert-info fade in ">
+  						<a class="close" data-dismiss="alert">&times;</a>
 						<?php echo lang('mig_installed_version'); ?> <b><?php echo $core_installed_version; ?></b> /
 						<?php echo lang('mig_latest_version'); ?> <b><?php echo $core_latest_version ?></b>
 					</div>
-		
+
 					<?php echo form_open($this->uri->uri_string(), 'class="form-horizontal"'); ?>
 						<input type="hidden" name="core_only" value="1" />
-		
+
 						<?php if (count($core_migrations)) : ?>
 						<div class="control-group">
-							<label><?php echo lang('mig_choose_migration'); ?></label>
+							<label class="control-label" for="migration"><?php echo lang('mig_choose_migration'); ?></label>
 							<div class="controls">
 								<select name="migration">
 								<?php foreach ($core_migrations as $migration) :?>
@@ -135,9 +147,9 @@
 								</select>
 							</div>
 						</div>
-		
+
 						<div class="form-actions">
-							<input type="submit" name="submit" class="btn primary" value="<?php echo lang('mig_migrate_button'); ?>" /> or <?php echo anchor(SITE_AREA .'/developer/migrations', lang('bf_action_cancel')); ?>
+							<input type="submit" name="submit" class="btn btn-primary" value="<?php echo lang('mig_migrate_button'); ?>" /> or <?php echo anchor(SITE_AREA .'/developer/migrations', '<i class="icon-refresh icon-white">&nbsp;</i>&nbsp;' . lang('bf_action_cancel'), 'class="btn btn-danger"'); ?>
 						</div>
 						<?php else: ?>
 							<p><?php echo lang('mig_no_migrations') ?></p>
@@ -148,13 +160,3 @@
 		</div>
 
 <?php endif; ?>
-
-
-
-<script>
-head.ready(function(){
-
-	$( "#tabs" ).tabs();
-
-});
-</script>

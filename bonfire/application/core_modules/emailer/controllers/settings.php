@@ -1,34 +1,41 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
-/*
-	Copyright (c) 2011 Lonnie Ezell
+/**
+ * Bonfire
+ *
+ * An open source project to allow developers get a jumpstart their development of CodeIgniter applications
+ *
+ * @package   Bonfire
+ * @author    Bonfire Dev Team
+ * @copyright Copyright (c) 2011 - 2012, Bonfire Dev Team
+ * @license   http://guides.cibonfire.com/license.html
+ * @link      http://cibonfire.com
+ * @since     Version 1.0
+ * @filesource
+ */
 
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the "Software"), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
+// ------------------------------------------------------------------------
 
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
+/**
+ * Emailer Settings Context
+ *
+ * Allows the management of the Emailer. Assists in setting up the proper email
+ * settings, as well as editing the template and viewing emails that are in the queue.
+ *
+ * @package    Bonfire
+ * @subpackage Modules_Emailer
+ * @category   Controllers
+ * @author     Bonfire Dev Team
+ * @link       http://guides.cibonfire.com/helpers/file_helpers.html
+ *
+ */
+class Settings extends Admin_Controller
+{
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
-*/
-
-/*
-	Class: Emailer Settings Context
-
-	Allows the management of the Emailer. Assists in setting up the proper email
-	settings, as well as editing the template and viewing emails that are in the queue.
-*/
-class Settings extends Admin_Controller {
-
+	/**
+	 * Sets up the permissions and loads the language file
+	 *
+	 * @return void
+	 */
 	public function __construct()
 	{
 		parent::__construct();
@@ -39,10 +46,18 @@ class Settings extends Admin_Controller {
 		Template::set_block('sub_nav', 'settings/_sub_nav');
 
 		$this->lang->load('emailer');
-	}
+
+	}//end __construct()
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * Displays the emailer settings
+	 *
+	 * @access public
+	 *
+	 * @return void
+	 */
 	public function index()
 	{
 		$this->load->library('form_validation');
@@ -50,26 +65,34 @@ class Settings extends Admin_Controller {
 		if ($this->input->post('submit'))
 		{
 			$this->form_validation->set_rules('sender_email', 'System Email', 'required|trim|valid_email|max_length[120]|xss_clean');
-			$this->form_validation->set_rules('mailpath', 'Sendmail Path', 'trim|xss_clean');
-			$this->form_validation->set_rules('smtp_host', 'SMTP Server Address', 'trim|strip_tags|xss_clean');
-			$this->form_validation->set_rules('smtp_user', 'SMTP Username', 'trim|strip_tags|xss_clean');
-			$this->form_validation->set_rules('smtp_pass', 'SMTP Password', 'trim|strip_tags|matches_pattern[[A-Za-z0-9!@#\%$^&+=]{2,20}]');
-			$this->form_validation->set_rules('smtp_port', 'SMTP Port', 'trim|strip_tags|numeric|xss_clean');
-			$this->form_validation->set_rules('smtp_timeout', 'SMTP timeout', 'trim|strip_tags|numeric|xss_clean');
+			$this->form_validation->set_rules('protocol', 'Email Server', 'trim|xss_clean');
+
+			if ($this->input->post('protocol') == 'sendmail')
+			{
+				$this->form_validation->set_rules('mailpath', 'Sendmail Path', 'required|trim|xss_clean');
+			}
+			elseif ($this->input->post('protocol') == 'smtp')
+			{
+				$this->form_validation->set_rules('smtp_host', 'SMTP Server Address', 'required|trim|strip_tags|xss_clean');
+				$this->form_validation->set_rules('smtp_user', 'SMTP Username', 'trim|strip_tags|xss_clean');
+				$this->form_validation->set_rules('smtp_pass', 'SMTP Password', 'trim|strip_tags|matches_pattern[[A-Za-z0-9!@#\%$^&+=]{2,20}]');
+				$this->form_validation->set_rules('smtp_port', 'SMTP Port', 'trim|strip_tags|numeric|xss_clean');
+				$this->form_validation->set_rules('smtp_timeout', 'SMTP timeout', 'trim|strip_tags|numeric|xss_clean');
+			}
 
 			if ($this->form_validation->run() !== FALSE)
 			{
 				$data = array(
-					array('name' => 'sender_email', 'value' => $this->input->post('sender_email')),
-					array('name' => 'mailtype', 'value' => $this->input->post('mailtype')),
-					array('name' => 'protocol', 'value' => strtolower($_POST['protocol'])),
-					array('name' => 'mailpath', 'value' => $_POST['mailpath']),
-					array('name' => 'smtp_host', 'value' => isset($_POST['smtp_host']) ? $_POST['smtp_host'] : ''),
-					array('name' => 'smtp_user', 'value' => isset($_POST['smtp_user']) ? $_POST['smtp_user'] : ''),
-					array('name' => 'smtp_pass', 'value' => isset($_POST['smtp_pass']) ? $_POST['smtp_pass'] : ''),
-					array('name' => 'smtp_port', 'value' => isset($_POST['smtp_port']) ? $_POST['smtp_port'] : ''),
-					array('name' => 'smtp_timeout', 'value' => isset($_POST['smtp_timeout']) ? $_POST['smtp_timeout'] : '5')
-				);
+						array('name' => 'sender_email', 'value' => $this->input->post('sender_email')),
+						array('name' => 'mailtype', 'value' => $this->input->post('mailtype')),
+						array('name' => 'protocol', 'value' => strtolower($_POST['protocol'])),
+						array('name' => 'mailpath', 'value' => $_POST['mailpath']),
+						array('name' => 'smtp_host', 'value' => isset($_POST['smtp_host']) ? $_POST['smtp_host'] : ''),
+						array('name' => 'smtp_user', 'value' => isset($_POST['smtp_user']) ? $_POST['smtp_user'] : ''),
+						array('name' => 'smtp_pass', 'value' => isset($_POST['smtp_pass']) ? $_POST['smtp_pass'] : ''),
+						array('name' => 'smtp_port', 'value' => isset($_POST['smtp_port']) ? $_POST['smtp_port'] : ''),
+						array('name' => 'smtp_timeout', 'value' => isset($_POST['smtp_timeout']) ? $_POST['smtp_timeout'] : '5')
+					 );
 
 				$updated = FALSE;
 				// save the settings to the db
@@ -84,11 +107,13 @@ class Settings extends Admin_Controller {
 				else
 				{
 					Template::set_message('There was an error saving your settings.', 'error');
-					echo "HERE";
-					exit;
 				}
 			}
-		}
+			else
+			{
+				Template::set_message('There was an error saving your settings.', 'error');
+			}
+		}//end if
 
 		// Load our current settings
 		$settings = $this->settings_model->select('name,value')->find_all_by('module', 'email');
@@ -99,10 +124,18 @@ class Settings extends Admin_Controller {
 		Template::set('toolbar_title', 'Email Settings');
 
 		Template::render();
-	}
+
+	}//end index()
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * Display the screen to edit the email templagtes
+	 *
+	 * @access public
+	 *
+	 * @return void
+	 */
 	public function template()
 	{
 		if ($this->input->post('submit'))
@@ -123,51 +156,67 @@ class Settings extends Admin_Controller {
 		Template::set('toolbar_title', lang('em_email_template'));
 
 		Template::render();
-	}
+	}//end template()
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * @access puublic
+	 *
+	 * @return void
+	 */
 	public function emails()
 	{
 		Template::set('toolbar_title', lang('em_email_contents'));
 		Template::render();
-	}
+
+	}//end emails()
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * Send a test email
+	 *
+	 * @access public
+	 *
+	 * @return void
+	 */
 	public function test()
 	{
-		$this->output->enable_profiler(false);
+		$this->output->enable_profiler(FALSE);
 
 		$this->load->library('emailer');
-		$this->emailer->enable_debug(true);
+		$this->emailer->enable_debug(TRUE);
 
 		$data = array(
-			'to'		=> $this->input->post('email'),
-			'subject'	=> lang('em_test_mail_subject'),
-			'message'	=> lang('em_test_mail_body')
-		);
+				'to'		=> $this->input->post('email'),
+				'subject'	=> lang('em_test_mail_subject'),
+				'message'	=> lang('em_test_mail_body')
+			 );
 
-		$results = $this->emailer->send($data, false);
+		$results = $this->emailer->send($data, FALSE);
 
 		Template::set('results', $results);
 		Template::render();
-	}
+
+	}//end test()
 
 	//--------------------------------------------------------------------
 
-	/*
-		Method: queue()
-
-		Displays all of the emails currently in the queue to be sent.
-	*/
+	/**
+	 * Displays all of the emails currently in the queue to be sent.
+	 *
+	 * @access public
+	 *
+	 * @return void
+	 */
 	public function queue()
 	{
 		$this->load->library('pagination');
 
 		$offset = $this->uri->segment(5);
 
-		$this->load->model('Emailer_model', 'emailer_model', true);
+		$this->load->model('Emailer_model', 'emailer_model', TRUE);
 
 		Template::set('emails', $this->emailer_model->limit($this->limit, $offset)->find_all());
 		Template::set('total_in_queue', $this->emailer_model->count_by('date_sent IS NULL'));
@@ -191,29 +240,44 @@ class Settings extends Admin_Controller {
 
 		Template::set('toolbar_title', lang('em_emailer_queue'));
 		Template::render();
-	}
+
+	}//end queue()
 
 	//--------------------------------------------------------------------
 
+	/**
+	 *
+	 * @access public
+	 *
+	 * @return void
+	 */
 	public function insert_test()
 	{
-		$this->output->enable_profiler(false);
+		$this->output->enable_profiler(FALSE);
 
 		$this->load->library('emailer');
 
 		$data = array(
-			'to'		=> $this->settings_lib->item('site.system_email'),
-			'subject'	=> lang('em_test_mail_subject'),
-			'message'	=> lang('em_test_mail_body')
-		);
+				'to'		=> $this->settings_lib->item('site.system_email'),
+				'subject'	=> lang('em_test_mail_subject'),
+				'message'	=> lang('em_test_mail_body')
+			 );
 
-		$this->emailer->send($data, true);
+		$this->emailer->send($data, TRUE);
 
 		redirect(SITE_AREA .'/settings/emailer/queue');
-	}
+
+	}//end insert_test()
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * Process the email queue
+	 *
+	 * @access public
+	 *
+	 * @return void
+	 */
 	public function force_process()
 	{
 		$this->load->library('emailer');
@@ -223,22 +287,24 @@ class Settings extends Admin_Controller {
 		ob_end_clean();
 
 		redirect(SITE_AREA .'/settings/emailer/queue');
-	}
+
+	}//end force_process()
 
 	//--------------------------------------------------------------------
 
 
-	/*
-		Method: preview()
-
-		Displays a preview of the email as stored in the database.
-
-		Parameters:
-			$id		- an INT with the ID of the email to preview from the queue.
-	*/
+	/**
+	 * Displays a preview of the email as stored in the database.
+	 *
+	 * @access public
+	 *
+	 * @param int $id An INT with the ID of the email to preview from the queue.
+	 *
+	 * @return void
+	 */
 	public function preview($id=0)
 	{
-		$this->output->enable_profiler(false);
+		$this->output->enable_profiler(FALSE);
 
 		$this->load->model('emailer/emailer_model');
 
@@ -253,9 +319,12 @@ class Settings extends Admin_Controller {
 				Template::render('blank');
 			}
 		}
-	}
+
+	}//end preview()
 
 	//--------------------------------------------------------------------
-}
+}//end class
 
 // End Admin class
+/* End of file settings.php */
+/* Location: ./application/core_modules/emailer/controllers/settings.php */

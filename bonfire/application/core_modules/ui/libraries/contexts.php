@@ -1,79 +1,129 @@
 <?php if (!defined('BASEPATH')) exit('No direct script access allowed');
+/**
+ * Bonfire
+ *
+ * An open source project to allow developers get a jumpstart their development of CodeIgniter applications
+ *
+ * @package   Bonfire
+ * @author    Bonfire Dev Team
+ * @copyright Copyright (c) 2011 - 2012, Bonfire Dev Team
+ * @license   http://guides.cibonfire.com/license.html
+ * @link      http://cibonfire.com
+ * @since     Version 1.0
+ * @filesource
+ */
 
-/*
-	Class: Contexts
+// ------------------------------------------------------------------------
 
-	Provides helper methods for displaying Context Navigation.
-*/
-class Contexts {
+/**
+ * Contexts Library
+ *
+ * Provides helper methods for displaying Context Navigation.
+ *
+ * @package    Bonfire
+ * @subpackage Modules_Ui
+ * @category   Libraries
+ * @author     Bonfire Dev Team
+ * @link       http://guides.cibonfire.com/helpers/file_helpers.html
+ *
+ */
+class Contexts
+{
 
-	/*
-		Var: $actions
-		Stores the available menu actions.
-	*/
+	/**
+	 * Stores the available menu actions.
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @var array
+	 */
 	protected static $actions = array();
 
-	/*
-		Var: $menu
-		Stores the organized menu actions.
-	*/
+	/**
+	 * Stores the organized menu actions.
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @var array
+	 */
 	protected static $menu	= array();
 
-	/*
-		Var: $outer_class
-		The class name to attach to the outer ul tag.
-
-		Default:
-			nav
-	*/
+	/**
+	 * The class name to attach to the outer ul tag.
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @var string
+	 */
 	protected static $outer_class	= 'nav';
 
-	/*
-		Var: $outer_id
-		The id to apply to the outer ul tag.
-
-		Default:
-			null
-	*/
+	/**
+	 * The id to apply to the outer ul tag.
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @var string
+	 */
 	protected static $outer_id	= null;
 
-	/*
-		Var: $parent_class
-		The class to attach to li tags with children
-
-		Default:
-			dropdown
-	*/
+	/**
+	 * The class to attach to li tags with children
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @var string
+	 */
 	protected static $parent_class	= 'dropdown';
 
-	/*
-		Var: $child_class
-		The class to apply to ul tags within li tags.
-
-		Default:
-			dropdown-menu
-	*/
+	/**
+	 * The class to apply to ul tags within li tags.
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @var string
+	 */
 	protected static $child_class	= 'dropdown-menu';
 
-	/*
-		Var: $ci
-		Pointer to the CodeIgniter instance.
-
-		Access:
-			Protected
-	*/
+	/**
+	 * Pointer to the CodeIgniter instance.
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @var string
+	 */
 	protected static $ci;
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * Calls the class init
+	 *
+	 * @return void
+	 */
 	public function __construct()
 	{
 		self::$ci =& get_instance();
 		self::init();
-	}
+
+	}//end __construct()
 
 	//--------------------------------------------------------------------
 
+	/**
+	 * Loads application helper
+	 *
+	 * @access protected
+	 * @static
+	 *
+	 * @return void
+	 */
 	protected static function init()
 	{
 		if (!function_exists('module_list'))
@@ -82,23 +132,24 @@ class Contexts {
 		}
 
 		log_message('debug', 'UI/Contexts library loaded');
-	}
+
+	}//end init()
 
 	//--------------------------------------------------------------------
 
-	/*
-		Method: render_menu()
-
-		Renders a list-based menu (with submenus) for each context.
-
-		Parameters:
-			$mode	- What to display in the top menu. Either 'icon', 'text', or 'both'.
-			$top_level_only	- If TRUE, will only display the top-level links.
-
-		Returns:
-			A string with the built navigation.
-	*/
-	public static function render_menu($mode='icon', $top_level_only = false)
+	/**
+	 * Renders a list-based menu (with submenus) for each context.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @param string $mode           What to display in the top menu. Either 'icon', 'text', or 'both'.
+	 * @param string $order_by       Determines the sort order of the elements. Valid options are 'normal', 'reverse', 'asc', 'desc'.
+	 * @param bool   $top_level_only If TRUE, will only display the top-level links.
+	 *
+	 * @return string A string with the built navigation.
+	 */
+	public static function render_menu($mode='icon', $order_by='normal', $top_level_only = false)
 	{
 		self::$ci->benchmark->mark('context_menu_start');
 
@@ -121,19 +172,45 @@ class Contexts {
 			array_push($contexts, 'developer');
 		}
 
-		$nav = '<ul class="'. self::$outer_class .'" id="'. self::$outer_id .'">';
+		// Sorting
+		switch ($order_by)
+		{
+			case 'reverse':
+				$contexts = array_reverse($contexts);
+				break;
+			case 'asc':
+				natsort($contexts);
+				break;
+			case 'desc':
+				rsort($contexts);
+				break;
+			case 'normal':
+			case 'default':
+				break;
+		}
+
+		$nav_id = ( trim (self::$outer_id) != '' ) ? ' id="'. self::$outer_id . '"' : '';
+		$nav = '<ul class="'. self::$outer_class .'" ' . $nav_id . ' >';
 
 		/*
 			Build out our navigation.
 		*/
 		foreach ($contexts as $context)
 		{
-			if (has_permission('Site.'. ucfirst($context) .'.View'))
+			if ( has_permission('Site.'. ucfirst($context) .'.View') == true || permission_exists('Site.'. ucfirst($context) .'.View') == false)
 			{
 				$url = site_url(SITE_AREA .'/'.$context);
 				$class = check_class($context, true);
 				$id = 'tb_'. $context;
-				$title = lang('bf_context_'. $context);
+
+				if (lang('bf_context_'. $context))
+				{
+					$title = lang('bf_context_'. $context);
+				}
+				else
+				{
+					$title = ucfirst($context);
+				}
 
 				$nav .= "<li class='dropdown {$class}'><a href='{$url}' id='{$id}' class='dropdown-toggle' title='{$title}' data-toggle='dropdown' data-id='{$context}_menu'>";
 
@@ -156,32 +233,29 @@ class Contexts {
 					$nav .= self::context_nav($context);
 				}
 
-				$nav .= "</li>";
-			}
-
-		}
+				$nav .= "</li>\n";
+			}//end if
+		}//end foreach
 
 		$nav .= '</ul>';
 
 		self::$ci->benchmark->mark('context_menu_end');
 
 		return $nav;
-	}
+
+	}//end render_menu()
 
 	//--------------------------------------------------------------------
 
-	/*
-		Method: render_mobile_navs()
-
-		Creates a series of divs that each contain a <ul> of links within
-		that context. This is intended for the tab-style mobile navigation.
-
-		Parameters:
-			none
-
-		Returns:
-			A string with the navigation lists.
-	*/
+	/**
+	 * Creates a series of divs that each contain a <ul> of links within
+	 * that context. This is intended for the tab-style mobile navigation.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @return string A string with the navigation lists.
+	 */
 	public static function render_mobile_navs()
 	{
 		$contexts = self::$ci->config->item('contexts');
@@ -196,22 +270,23 @@ class Contexts {
 		}
 
 		return $out;
-	}
+
+	}//end render_mobile_navs()
 
 	//--------------------------------------------------------------------
 
 
-	/*
-		Method: context_nav()
-
-		Builds the main navigation menu for each context.
-
-		Parameters:
-			$context	- The context to build the nav for.
-
-		Returns:
-			The HTML necessary to display the menu.
-	*/
+	/**
+	 * Builds the main navigation menu for each context.
+	 *
+	 * @access public
+	 *
+	 * @param string $context   The context to build the nav for.
+	 * @param string $class     The class to use on the nav
+	 * @param bool   $ignore_ul
+	 *
+	 * @return string The HTML necessary to display the menu.
+	 */
 	public function context_nav($context=null, $class='dropdown-menu', $ignore_ul=false)
 	{
 		// Get a list of modules with a controller matching
@@ -222,7 +297,16 @@ class Contexts {
 		{
 			if (module_controller_exists($context, $module) === true)
 			{
-				self::$actions[] = $module;
+				$mod_config = module_config($module);
+
+				self::$actions[$module] = array(
+					'weight'		=> isset($mod_config['weights'][$context]) ? $mod_config['weights'][$context] : 0,
+					'display_name'	=> isset($mod_config['name']) ? $mod_config['name'] : $module,
+					'title' 		=> isset($mod_config['description']) ? $mod_config['description'] : $module,
+					'menus'			=> isset($mod_config['menus']) ? $mod_config['menus'] : false,
+				);
+
+				self::$actions[$module]['menu_topic'] = isset($mod_config['menu_topic']) ? $mod_config['menu_topic'] : self::$actions[$module]['display_name'];
 			}
 		}
 
@@ -234,35 +318,33 @@ class Contexts {
 			return '<ul class="'. $class .'"></ul>';
 		}
 
+		// Order our actions by their weight, then alphabetically
+		self::sort_actions();
+
 		// Grab our module permissions so we know who can see what on the sidebar
 		$permissions = self::$ci->config->item('module_permissions');
 
 		// Build up our menu array
-		foreach (self::$actions as $module)
+		foreach (self::$actions as $module => $config)
 		{
 			// Make sure the user has permission to view this page.
-			if ((isset($permissions[$context][$module]) && has_permission($permissions[$context][$module])) || (isset($permissions[$context]) && is_array($permissions[$context]) && !array_key_exists($module, $permissions[$context])))
+//			if ((isset($permissions[$context][$module]) && has_permission($permissions[$context][$module])) || (isset($permissions[$context]) && is_array($permissions[$context]) && !array_key_exists($module, $permissions[$context])))
+			if (has_permission('Bonfire.'.ucfirst($module).'.View') || has_permission(ucfirst($module).'.'.ucfirst($context).'.View'))
 			{
-				// Grab our module config array, if any.
-				$mod_config = module_config($module);
-
-				$display_name = isset($mod_config['name']) ? $mod_config['name'] : $module;
-				$title = isset($mod_config['description']) ? $mod_config['description'] : $module;
-
-				$menu_topic = isset($mod_config['menu_topic'][$context]) ? $mod_config['menu_topic'][$context] : $display_name;
-
 				// Drop-down menus?
-				if (isset($mod_config['menus']) && isset($mod_config['menus'][$context]))
+				if ($config['menus'] && isset($config['menus'][$context]))
 				{
-					$menu_view = $mod_config['menus'][$context];
-				} else
+					$menu_view = $config['menus'][$context];
+				}
+				else
 				{
 					$menu_view = '';
 				}
 
+				$menu_topic = is_array($config['menu_topic']) && isset($config['menu_topic'][$context]) ? $config['menu_topic'][$context] : $config['display_name'];
 				self::$menu[$menu_topic][$module] = array(
-						'title'			=> $title,
-						'display_name'	=> $display_name,
+						'title'			=> $config['title'],
+						'display_name'	=> $config['display_name'],
 						'menu_view'		=> $menu_view,
 						'menu_topic'	=> $menu_topic
 				);
@@ -274,7 +356,8 @@ class Contexts {
 		self::$actions = array();
 
 		return $menu;
-	}
+
+	}//end context_nav()
 
 	//--------------------------------------------------------------------
 
@@ -284,18 +367,16 @@ class Contexts {
 	// !UTILITY METHODS
 	//--------------------------------------------------------------------
 
-	/*
-		Method: set_attrs()
-
-		Takes an array of key/value pairs and sets the class/id names.
-
-		Parameters:
-			$attrs	- an array of key/value pairs that correspond to the
-						class methods for classes and ids.
-
-		Returns:
-			void
-	*/
+	/**
+	 * Takes an array of key/value pairs and sets the class/id names.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @param array $attrs An array of key/value pairs that correspond to the class methods for classes and ids.
+	 *
+	 * @return void
+	 */
 	public static function set_attrs($attrs=array())
 	{
 		if (!is_array($attrs))
@@ -310,18 +391,22 @@ class Contexts {
 				self::$attr = $value;
 			}
 		}
-	}
+
+	}//end set_attrs()
 
 	//--------------------------------------------------------------------
 
-	/*
-		Method: build_sub_menu()
-
-		Handles building out the HTML for the menu.
-
-		Parameters:
-			$actions	- an array of action name and action url.
-	*/
+	/**
+	 * Handles building out the HTML for the menu.
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @param string $context   The context to build the nav for.
+	 * @param bool   $ignore_ul
+	 *
+	 * @return string HTML for the sub menu
+	 */
 	public static function build_sub_menu($context, $ignore_ul=false)
 	{
 		$list = '';
@@ -341,7 +426,7 @@ class Contexts {
 			// out a menu based on the multiple items.
 			if (count($topic) > 1)
 			{
-				$list .= '<li><a href="#" class="no-link parent-menu">'. ucwords($topic_name) .'</a>';
+				$list .= '<li class="no-link parent-menu"><a href="#" class="no-link parent-menu">'. ucwords($topic_name) .'</a>';
 				$list .= '<ul>';
 
 				foreach ($topic as $module => $vals)
@@ -374,9 +459,8 @@ class Contexts {
 				{
 					$list .= self::build_item($module, $vals['title'], $vals['display_name'], $context, $vals['menu_view']);
 				}
-			}
-
-		}
+			}//end if
+		}//end foreach
 
 		if (!$ignore_ul)
 		{
@@ -386,29 +470,29 @@ class Contexts {
 		self::$menu = array();
 
 		return $list;
-	}
+
+	}//end build_sub_menu()
 
 	//--------------------------------------------------------------------
 
 
-	/*
-		Method: build_item()
-
-		Handles building an individual list item (with sub-menus) for the menu.
-
-		Parameters:
-			$module			- The name of the module this link belongs to
-			$title			- The title used on the link
-			$display_name	- The name to display in the menu
-			$context		- The name of the context
-			$menu_view		- The name of the view file that contains the sub-menu
-
-		Returns:
-			The HTML necessary for a single item and it's sub-menus.
-	*/
+	/**
+	 * Handles building an individual list item (with sub-menus) for the menu.
+	 *
+	 * @access private
+	 * @static
+	 *
+	 * @param string $module       The name of the module this link belongs to
+	 * @param string $title        The title used on the link
+	 * @param string $display_name The name to display in the menu
+	 * @param string $context      The name of the context
+	 * @param string $menu_view    The name of the view file that contains the sub-menu
+	 *
+	 * @return string The HTML necessary for a single item and it's sub-menus.
+	 */
 	private static function build_item($module, $title, $display_name, $context, $menu_view='')
 	{
-		$item  = '<li><a href="'. site_url(SITE_AREA .'/'. $context .'/'. $module) .'" class="{class}"';
+		$item  = '<li {listclass}><a href="'. site_url(SITE_AREA .'/'. $context .'/'. $module) .'" class="{class}"';
 		$item .= ' title="'. $title .'">'. ucwords(str_replace('_', '', $display_name)) ."</a>\n";
 
 		// Sub Menus?
@@ -420,19 +504,50 @@ class Contexts {
 			$item .= $view;
 		}
 
+		$listclass = '';
+
 		// Is this the current module?
 		$class = $module == self::$ci->uri->segment(3) ? 'active' : '';
 		if (!empty($menu_view))
 		{
 			$class .= ' parent-menu';
+			$listclass = 'class="parent-menu" ';
 		}
 
-		$item = str_replace('{class}', $class, $item);
 
+		$item = str_replace('{class}', $class, $item);
+		$item = str_replace('{listclass}', $listclass, $item);
 		$item .= "</li>\n";
 
 		return $item;
-	}
+
+	}//end build_item()
 
 	//--------------------------------------------------------------------
-}
+
+	/**
+	 * Sort the actions array
+	 *
+	 * @access private
+	 *
+	 * @return void
+	 */
+	private function sort_actions()
+	{
+		$weights 		= array();
+		$display_names	= array();
+
+		foreach (self::$actions as $key => $action)
+		{
+			$weights[$key] 			= $action['weight'];
+			$display_names[$key]	= $action['display_name'];
+		}
+
+		array_multisort($weights, SORT_DESC, $display_names, SORT_ASC, self::$actions);
+		//echo '<pre>'. print_r(self::$actions, true) .'</pre>';
+
+	}//end sort_actions()
+
+	//--------------------------------------------------------------------
+
+}//end Contexts

@@ -1,19 +1,17 @@
 <?php
-	Assets::add_js(array(
-			'jquery-1.6.4.min.js',
-			'plugins.js',
-			Template::theme_url('js/jwerty.js'),
-		),
-		'external',
-		true
-	);
+	Assets::add_js( array(
+		                 Template::theme_url('js/bootstrap.min.js'),
+		                 Template::theme_url('js/jwerty.js')) ,
+		                 'external',
+		                 true
+		                 );
 ?>
-<?php echo theme_view('_header'); ?>
+<?php echo theme_view('partials/_header'); ?>
 
-<div class="fluid-container body">
-	<?php echo Template::message(); ?>
+<div class="container-fluid body">
+        <?php echo Template::message(); ?>
 
-	<?php echo Template::yield(); ?>
+        <?php echo Template::yield(); ?>
 </div>
 
-<?php echo theme_view('_footer'); ?>
+<?php echo theme_view('partials/_footer'); ?>

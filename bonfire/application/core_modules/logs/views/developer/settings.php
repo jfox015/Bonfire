@@ -1,5 +1,6 @@
 <?php if ($log_threshold == 0) : ?>
-	<div class="alert alert-warning">
+	<div class="alert alert-warning fade in">
+		<a class="close" data-dismiss="alert">&times;</a>				
 		<?php echo lang('log_not_enabled'); ?>
 	</div>
 <?php endif; ?>
@@ -30,12 +31,13 @@
 
 	</fieldset>
 
-	<div class="alert alert-info">
+	<div class="alert alert-info fade in">
+		<a class="close" data-dismiss="alert">&times;</a>		
 		<?php echo lang('log_big_file_note'); ?>
 	</div>
 
 	<div class="form-actions">
-		<input type="submit" name="submit" class="btn primary" value="<?php echo lang('log_save_button'); ?>" />
+		<input type="submit" name="submit" class="btn btn-primary" value="<?php echo lang('log_save_button'); ?>" />
 	</div>
 
 <?php echo form_close(); ?>

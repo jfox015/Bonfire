@@ -70,7 +70,11 @@ class Install extends CI_Controller {
 		'/bonfire/application/cache',
 		'/bonfire/application/logs',
 		'/bonfire/application/config',
-        '/bonfire/application/archives',
+		'/bonfire/application/config/development',
+		'/bonfire/application/config/testing',
+		'/bonfire/application/config/production',
+		'/bonfire/application/archives',
+		'/bonfire/application/archives/config',
 		'/bonfire/application/db/backups',
 		'/bonfire/application/db/migrations',
 		'/assets/cache'
@@ -91,7 +95,8 @@ class Install extends CI_Controller {
 		sure they can be written to.
 	*/
 	private $writeable_files = array(
-		'/bonfire/application/config/application.php'
+		'/bonfire/application/config/application.php',
+		'/bonfire/application/config/database.php',
 	);
 
 	private $vdata = array();
@@ -410,6 +415,7 @@ class Install extends CI_Controller {
 			'role_id'	=> 1,
 			'email'		=> $this->input->post('email'),
 			'username'	=> $this->input->post('username'),
+			'active'    => 1,
 		);
 		list($password, $salt) = $this->hash_password($this->input->post('password'));
 

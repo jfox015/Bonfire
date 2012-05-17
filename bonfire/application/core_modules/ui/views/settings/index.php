@@ -1,50 +1,27 @@
 <?php if (validation_errors()) : ?>
-<div class="notification error">
+<div class="alert alert-error fade in">
+	<a class="close" data-dismiss="alert">&times;</a>
 	<p><?php echo validation_errors(); ?></p>
 </div>
 <?php endif; ?>
 
-<?php echo form_open($this->uri->uri_string(), 'class="form-horizontal"'); ?>
+<div class="admin-box">
+	<h3><?php echo lang('ui_shortcuts') ?></h3>
+
+<?php echo form_open($this->uri->uri_string(), array('class' => "form-horizontal", 'id' => 'shortcut_form')); ?>
 	<input type="hidden" name="remove_action" id="remove_action" />
-	
-	<fieldset>
-		<legend><?php echo lang('ui_actions') ?></legend>
-		
-		<div class="alert alert-info">
+
+		<div class="alert alert-info fade in">
+			<a class="close" data-dismiss="alert">&times;</a>
 			<?php echo lang('ui_keyboard_shortcuts'); ?>
 		</div>
-		
-		<?php if (isset($current) && is_array($current)): ?>
-		<table class="table table-striped table-condensed">
-			<tbody>
-			<?php foreach ($current as $name => $detail): ?>
-			<tr>
-				<td style="width: 25%"><b><?php echo $name;?></b></td>
-				<td><?php echo $detail['description'];?></td>
-			</tr>
-			<?php endforeach?>
-			</tbody>
-		</table>
-		<?php else: ?>
-			
-			<div class="alert alert-warning">
-				<?php echo lang('ui_no_shortcuts');?>
-			</div>
-			
-		<?php endif;?>
-		
-		<br/>
-	</fieldset>
-	
-	<fieldset>
-		<legend><?php echo lang('ui_shortcuts') ?></legend>
-	
+
 		<?php $count = 1; ?>
 		<table class="table table-striped table-condensed">
 			<thead>
 				<tr>
 					<th><?php echo lang('ui_action') ?></th>
-					<th><?php echo lang('ui_shortcut') ?></th>
+					<th colspan="2"><?php echo lang('ui_shortcut') ?> <span class="help-inline"><?php echo lang('ui_shortcut_help') ?></span></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -69,18 +46,25 @@
 					<?php $count++; ?>
 					<tr id="shortcut<?php echo $count; ?>">
 						<td id="shortcut<?php echo $count; ?>">
-							<input type="text" id="action<?php echo $count;?>" name="action<?php echo $count;?>"  value="<?php echo isset($action) ? $action : set_value('actions['.$count.']') ?>" />
+							<input type="hidden" id="action<?php echo $count;?>" name="action[<?php echo $count;?>]"  value="<?php echo isset($action) ? $action : set_value('actions['.$count.']') ?>" />
+							<?php echo $current[$action]['description'] ?>
 						</td>
 						<td>
-							<input type="text" id="shortcut<?php echo $count;?>" name="shortcut<?php echo $count;?>"  value="<?php echo isset($shortcut) ? $shortcut : set_value('shortcuts['.$count.']') ?>" />
+							<input type="text" id="shortcut<?php echo $count;?>" name="shortcut[<?php echo $count;?>]"  value="<?php echo isset($shortcut) ? $shortcut : set_value('shortcuts['.$count.']') ?>" />
 						</td>
 						<td>
-							<input type="button" name="remove_shortcut" id="remove_shortcut<?php echo $count;?>" value="<?php echo lang('ui_remove_shortcut') ?>" class="btn danger" />
+							<input type="submit" name="remove_shortcut" id="remove_shortcut<?php echo $count;?>" value="<?php echo lang('ui_remove_shortcut') ?>" class="btn btn-danger" />
 						</td>
 					</tr>
 				<?php endforeach; ?>
+				<tr>
+					<td>&nbsp;</td>
+					<td><input type="submit" name="submit" class="btn btn-primary" id="update" value="<?php echo lang('ui_update_shortcuts') ?>" /></td>
+					<td>&nbsp;</td>
+				</tr>
 			</tbody>
 		</table>
-	</div>
 
 <?php echo form_close(); ?>
+
+</div>
