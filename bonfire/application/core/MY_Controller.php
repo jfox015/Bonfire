@@ -186,7 +186,12 @@ class Front_Controller extends Base_Controller
 
 		Template::set_theme($this->config->item('default_theme'));
 
-	}//end __construct()
+        // Get the site title from settings to use in <title> and Headers by default
+        $settings = $this->settings_lib->find_all_by('name','site.title');
+        Template::set('site_title',$settings['site.title']);
+        unset($settings);
+
+    }//end __construct()
 
 	//--------------------------------------------------------------------
 
