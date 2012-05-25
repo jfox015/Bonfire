@@ -129,14 +129,6 @@ class Assets
 	 */
 	private static $module_styles		= array();
 
-    /*
-         Var: $globals
-
-         Flag to define is global includes should be rendered
-         on css() and js() output or supressed.
-     */
-    private static $globals					= true;
-
 	/**
 	 * Flag to define is global includes should be rendered
 	 * on css() and js() output or supressed.
@@ -198,25 +190,6 @@ class Assets
 	}//end init()
 
 	//--------------------------------------------------------------------
-
-    //--------------------------------------------------------------------
-    // !GLOBAL METHODS
-    //--------------------------------------------------------------------
-    /*
-         Method: set_globals()
-
-         Set the value of the static $globals flag that determines if
-         global includes (like the default media type CSS and global.js files)
-         are automatically included in css() and js() output.
-
-         Parameters:
-             $include	- TRUE to include (default) or FALSE to exclude
-         Return:
-            <void>
-     */
-    public static function set_globals($include = true) {
-        self::$globals = $include;
-    }
 
 	//--------------------------------------------------------------------
 	// !GLOBAL METHODS
