@@ -24,7 +24,7 @@
 <div class="row-fluid">
 	<div class="span8 offset2">
 
-	<?php echo form_open($this->uri->uri_string(), 'class="form-horizontal"'); ?>
+	<?php echo form_open($this->uri->uri_string(), array('class' => "form-horizontal", 'autocomplete' => 'off')); ?>
 
 	<div class="control-group <?php echo iif( form_error('code') , 'error') ;?>">
 		<label class="control-label required" for="code"><?php echo lang('us_activate_code'); ?></label>
@@ -34,7 +34,6 @@
 	</div>
 
 	<div class="control-group">
-		<label class="control-label" for="submit">&nbsp;</label>
 		<div class="controls">
 			<input class="btn btn-primary" type="submit" name="submit" value="<?php echo lang('us_confirm_activate_code') ?>"  />
 		</div>

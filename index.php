@@ -1,5 +1,12 @@
 <?php
 
+// Check if the install folder exists - if so then show the installer app
+if (is_dir(dirname(__FILE__).'/install') == true)
+{
+	header('Location: install');
+	exit;
+}
+
 /*
  *---------------------------------------------------------------
  * APPLICATION ENVIRONMENT
@@ -42,26 +49,11 @@
 		case 'testing':
 		case 'production':
 			error_reporting(0);
-			// Check if the install folder exists - if so then show the installer app
-			if (is_dir(dirname(__FILE__).'/install') == true)
-			{
-				header('Location: install');
-				exit;
-			}
 			break;
 
-        // Check if the install folder exists - if so then show the installer app
-        if (is_dir('./install') == true)
-        {
-            header('Location: install');
-            exit;
-        }
-        error_reporting(0);
-        break;
-
-    default:
-        exit('The application environment is not set correctly.');
-}
+		default:
+			exit('The application environment is not set correctly.');
+	}
 
 /*
 |---------------------------------------------------------------

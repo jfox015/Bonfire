@@ -40,7 +40,7 @@ class Home extends Front_Controller
 	public function index()
 	{
 		modules::run('league_manager');
-		//Template::render();
+-		//Template::render();
 	}//end index()
 
 	//--------------------------------------------------------------------

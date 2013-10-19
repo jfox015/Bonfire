@@ -18,7 +18,7 @@
 			<ul class="dropdown-menu">
 			<?php foreach ($roles as $role) : ?>
 				<li>
-					<a href="<?php echo site_url(SITE_AREA .'/settings/users?filter=role&role_id='. $role->role_id) ?>">
+					<a href="<?php e(site_url(SITE_AREA .'/settings/users?filter=role&role_id='. $role->role_id)) ?>">
 						<?php echo $role->role_name; ?>
 					</a>
 				</li>
@@ -27,7 +27,7 @@
 		</li>
 	</ul>
 
-	<?php echo form_open($this->uri->uri_string()) ;?>
+	<?php echo form_open($current_url .'?'. htmlentities($_SERVER['QUERY_STRING'], ENT_QUOTES, 'UTF-8')); ?>
 
 	<table class="table table-striped">
 		<thead>
@@ -37,6 +37,7 @@
 				<th><?php echo lang('bf_username'); ?></th>
 				<th><?php echo lang('bf_display_name'); ?></th>
 				<th><?php echo lang('bf_email'); ?></th>
+				<th><?php echo lang('us_role'); ?></th>
 				<th style="width: 11em"><?php echo lang('us_last_login'); ?></th>
 				<th style="width: 10em"><?php echo lang('us_status'); ?></th>
 			</tr>
@@ -44,9 +45,10 @@
 		<?php if (isset($users) && is_array($users) && count($users)) : ?>
 		<tfoot>
 			<tr>
-				<td colspan="7">
+				<td colspan="8">
 					<?php echo lang('bf_with_selected') ?>
 					<?php if($filter == 'deleted'):?>
+					<input type="submit" name="restore" class="btn" value="<?php echo lang('bf_action_restore') ?>">
 					<input type="submit" name="purge" class="btn btn-danger" value="<?php echo lang('bf_action_purge') ?>" onclick="return confirm('<?php echo lang('us_purge_del_confirm'); ?>')">
 					<?php else: ?>
 					<input type="submit" name="activate" class="btn" value="<?php echo lang('bf_action_activate') ?>">
@@ -73,7 +75,10 @@
 				</td>
 				<td><?php echo $user->display_name ?></td>
 				<td>
-					<a href="mailto://<?php echo $user->email ?>"><?php echo $user->email ?></a>
+					<a href="mailto:<?php echo $user->email ?>"><?php echo $user->email ?></a>
+				</td>
+				<td>
+					<?php echo $roles[$user->role_id]->role_name ?>
 				</td>
 				<td>
 					<?php
@@ -118,7 +123,7 @@
 			<?php endforeach; ?>
 		<?php else: ?>
 			<tr>
-				<td colspan="6">No users found that match your selection.</td>
+				<td colspan="8">No users found that match your selection.</td>
 			</tr>
 		<?php endif; ?>
 		</tbody>

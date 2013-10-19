@@ -38,7 +38,7 @@ if ( ! function_exists('gravatar_link'))
 	 * it will return a link to an image under *your_theme/images/user.png*.
 	 * Also, by explicity omitting email you're denying http-req to gravatar.com.
 	 *
-	 * @param $email string The email address to check for. If null, defaults to theme img.
+	 * @param $email string The email address to check for. If NULL, defaults to theme img.
 	 * @param $size int The width (and height) of the resulting image to grab.
 	 * @param $alt string Alt text to be put in the link tag.
 	 * @param $title string The title text to be put in the link tag.
@@ -47,7 +47,7 @@ if ( ! function_exists('gravatar_link'))
 	 *
 	 * @return string The resulting image tag.
 	 */
-	function gravatar_link($email=null, $size=48, $alt='', $title='', $class=' ', $id=' ')
+	function gravatar_link($email=NULL, $size=48, $alt='', $title='', $class=NULL, $id=NULL)
 	{
 		// Set our default image based on required size.
 		$default_image = Template::theme_url('images/user.png');
@@ -82,9 +82,13 @@ if ( ! function_exists('gravatar_link'))
 			$avatarURL = $default_image ;
 		}
 
-		//$id = ( $id != '' ) ? ' id="' . $id . '" ' : '';
+		$alt = htmlentities($alt, ENT_QUOTES, 'UTF-8');
+		$title = htmlentities($title, ENT_QUOTES, 'UTF-8');
+		
+		$id = ($id !== NULL) ? ' id="' .$id .'" ' : ' ';
+		$class = ($class !== NULL) ? ' class="' .$class .'"' : ' ';
 
-		return '<img src="'. $avatarURL .'" width="'.	$size .'" height="'. $size . '" alt="'. $alt .'" title="'. $title .'" class="'. $class .'" id="'. $id .'" />';
+		return '<img src="'. $avatarURL .'" width="'.	$size .'" height="'. $size . '" alt="'. $alt .'" title="'. $title .'" ' . $class . $id. ' />';
 	}
 }
 
@@ -522,7 +526,6 @@ if ( !function_exists('obj_value') )
 
 	}//end obj_value()
 }
-
 //--------------------------------------------------------------------
 
 if ( !function_exists('iif') )
@@ -549,42 +552,41 @@ if ( !function_exists('iif') )
 		}
 	}//end iif()
 }
-
 //--------------------------------------------------------------------
 
 if ( !function_exists('list_contexts') )
 {
-	/**
-	 * 	Returns a list of the contexts specified for the application. The options $landing_page_filter
-	 * can be applied to force return of contexts that have a landing page (index.php) available.
-	 *
-	 *	@param	$landing_page_filter	Boolean		TRUE to filter FALSE for all
-	 *	@return 						array	The context values array
-	 */
-	function list_contexts($landing_page_filter = false) 
-	{
+    /**
+     * 	Returns a list of the contexts specified for the application. The options $landing_page_filter
+     * can be applied to force return of contexts that have a landing page (index.php) available.
+     *
+     *	@param	$landing_page_filter	Boolean		TRUE to filter FALSE for all
+     *	@return 						array	The context values array
+     */
+    function list_contexts($landing_page_filter = false)
+    {
         $ci = &get_instance();
-		
-		$contexts = $ci->config->item('contexts');
-		if (empty($contexts) || !is_array($contexts) || !count($contexts))
-		{
-			return false;
-		}
 
-		// Ensure settings context exists
-		if (!in_array('settings', $contexts))
-		{
-			array_push($contexts, 'settings');
-		}
+        $contexts = $ci->config->item('contexts');
+        if (empty($contexts) || !is_array($contexts) || !count($contexts))
+        {
+            return false;
+        }
 
-		// Ensure developer context exists
-		if (!in_array('developer', $contexts))
-		{
-			array_push($contexts, 'developer');
-		}
-		// Optional removal of contexts without landing pages
-		if ($landing_page_filter === true)
-		{
+        // Ensure settings context exists
+        if (!in_array('settings', $contexts))
+        {
+            array_push($contexts, 'settings');
+        }
+
+        // Ensure developer context exists
+        if (!in_array('developer', $contexts))
+        {
+            array_push($contexts, 'developer');
+        }
+        // Optional removal of contexts without landing pages
+        if ($landing_page_filter === true)
+        {
             while ($context = current($contexts))
             {
                 if (!file_exists(realpath(VIEWPATH).DIRECTORY_SEPARATOR.SITE_AREA.DIRECTORY_SEPARATOR.$context.DIRECTORY_SEPARATOR.'index.php'))
@@ -593,7 +595,7 @@ if ( !function_exists('list_contexts') )
                 }
                 next($contexts);
             }
-		}
-		return $contexts;
-	}
+        }
+        return $contexts;
+    }
 }

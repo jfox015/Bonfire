@@ -56,13 +56,27 @@ if ( ! function_exists('_form_common'))
 	 */
 	function _form_common($type='text', $data='', $value='', $label='', $extra='', $tooltip = '')
 	{
-		$defaults = array('type' => 'text', 'name' => (( ! is_array($data)) ? $data : ''), 'value' => $value);
+		$defaults = array('type' => $type, 'name' => (( ! is_array($data)) ? $data : ''), 'value' => $value);
 
 		// If name is empty at this point, try to grab it from the $data array
 		if (empty($defaults['name']) && is_array($data) && isset($data['name']))
 		{
 			$defaults['name'] = $data['name'];
 			unset($data['name']);
+		}
+
+		// If label is empty at this point, try to grab it from the $data array
+		if (empty($label) && is_array($data) && isset($data['label']))
+		{
+			$label = $data['label'];
+			unset($data['label']);
+		}
+
+		// If tooltip is empty at this point, try to grab it from the $data array
+		if (empty($tooltip) && is_array($data) && isset($data['tooltip']))
+		{
+			$tooltip = $data['tooltip'];
+			unset($data['tooltip']);
 		}
 
 		$error = '';

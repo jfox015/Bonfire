@@ -47,27 +47,9 @@ class Settings extends Admin_Controller
 
 		$this->lang->load('users');
 
-		Template::set_block('sub_nav', 'settings/sub_nav');
+		Template::set_block('sub_nav', 'settings/_sub_nav');
 
 	}//end __construct()
-
-	//--------------------------------------------------------------------
-
-	/**
-	 * Remap methods
-	 *
-	 * @access public
-	 *
-	 * @param string $method Name of the method being requested
-	 */
-	public function _remap($method)
-	{
-		if (method_exists($this, $method))
-		{
-			$this->$method();
-		}
-
-	}//end _remap()
 
 	//--------------------------------------------------------------------
 
@@ -78,39 +60,55 @@ class Settings extends Admin_Controller
 	 *
 	 * @return  void
 	 */
-	public function index()
+	public function index($offset=0)
 	{
 		$this->auth->restrict('Bonfire.Users.Manage');
 
 		$roles = $this->role_model->select('role_id, role_name')->where('deleted', 0)->find_all();
-		Template::set('roles', $roles);
-
-		$offset = $this->uri->segment(5);
+		$ordered_roles = array();
+		foreach ($roles as $role)
+		{
+			$ordered_roles[$role->role_id] = $role;
+		}
+		Template::set('roles', $ordered_roles);
 
 		// Do we have any actions?
-		$action = $this->input->post('submit').$this->input->post('delete').$this->input->post('purge').$this->input->post('activate').$this->input->post('deactivate');
+		$action = $this->input->post('submit').$this->input->post('delete').$this->input->post('purge').$this->input->post('restore').$this->input->post('activate').$this->input->post('deactivate');
 
 		if (!empty($action))
 		{
 			$checked = $this->input->post('checked');
 
-			switch(strtolower($action))
+			if (!empty($checked))
 			{
-				case 'activate':
-					$this->activate($checked);
-					break;
-				case 'deactivate':
-					$this->deactivate($checked);
-					break;
-				case 'ban':
-					$this->ban($checked);
-					break;
-				case 'delete':
-					$this->delete($checked);
-					break;
-				case 'purge':
-					$this->purge($checked);
-					break;
+				foreach($checked as $user_id)
+				{
+					switch(strtolower($action))
+					{
+						case 'activate':
+							$this->_activate($user_id);
+							break;
+						case 'deactivate':
+							$this->_deactivate($user_id);
+							break;
+						case 'ban':
+							$this->_ban($user_id);
+							break;
+						case 'delete':
+							$this->_delete($user_id);
+							break;
+						case 'purge':
+							$this->_purge($user_id);
+							break;
+						case 'restore':
+							$this->_restore($user_id);
+							break;
+					}
+				}
+			}
+			else
+			{
+				Template::set_message(lang('us_empty_id'), 'error');
 			}
 		}
 
@@ -217,13 +215,16 @@ class Settings extends Admin_Controller
 				$meta_data = array();
 				foreach ($meta_fields as $field)
 				{
-					$meta_data[$field['name']] = $this->input->post($field['name']);
+					if (!isset($field['admin_only']) || $field['admin_only'] === FALSE
+						|| (isset($field['admin_only']) && $field['admin_only'] === TRUE
+							&& isset($this->current_user) && $this->current_user->role_id == 1))
+					{
+						$meta_data[$field['name']] = $this->input->post($field['name']);
+					}
 				}
 
 				// now add the meta is there is meta data
 				$this->user_model->save_meta_for($id, $meta_data);
-
-				$this->load->model('activities/Activity_model', 'activity_model');
 
 				$user = $this->user_model->find($id);
 				$log_name = (isset($user->display_name) && !empty($user->display_name)) ? $user->display_name : ($this->settings_lib->item('auth.use_usernames') ? $user->username : $user->email);
@@ -258,7 +259,7 @@ class Settings extends Admin_Controller
 	 *
 	 * @return void
 	 */
-	public function edit()
+	public function edit($user_id='')
 	{
 		$this->load->config('address');
 		$this->load->helper('address');
@@ -266,7 +267,10 @@ class Settings extends Admin_Controller
 
 		// if there is no id passed in edit the current user
 		// this is so we don't have to pass the user id in the url for editing the current users profile
-		$user_id = $this->uri->segment(5) != '' ? $this->uri->segment(5) : $this->current_user->id;
+		if (empty($user_id))
+		{
+			$user_id = $this->current_user->id;
+		}
 
 		if (empty($user_id))
 		{
@@ -294,15 +298,19 @@ class Settings extends Admin_Controller
 				$meta_data = array();
 				foreach ($meta_fields as $field)
 				{
-					$meta_data[$field['name']] = $this->input->post($field['name']);
+					if (!isset($field['admin_only']) || $field['admin_only'] === FALSE
+						|| (isset($field['admin_only']) && $field['admin_only'] === TRUE
+							&& isset($this->current_user) && $this->current_user->role_id == 1))
+					{
+						$meta_data[$field['name']] = $this->input->post($field['name']);
+					}
 				}
 
 				// now add the meta is there is meta data
 				$this->user_model->save_meta_for($user_id, $meta_data);
 
-				$this->load->model('activities/Activity_model', 'activity_model');
 
-				$user = $this->user_model->find_user_and_meta($user_id);;
+				$user = $this->user_model->find_user_and_meta($user_id);
 				$log_name = (isset($user->display_name) && !empty($user->display_name)) ? $user->display_name : ($this->settings_lib->item('auth.use_usernames') ? $user->username : $user->email);
 				$this->activity_model->log_activity($this->current_user->id, lang('us_log_edit') .': '.$log_name, 'users');
 
@@ -346,160 +354,97 @@ class Settings extends Admin_Controller
 	/**
 	 * Ban a user or group of users
 	 *
-	 * @access public
+	 * @access private
 	 *
-	 * @param array  $users       Array of users to ban
+	 * @param int    $user_id     User to ban
 	 * @param string $ban_message Set a message for the user as the reason for banning them
 	 *
 	 * @return void
 	 */
-	public function ban($users=array(), $ban_message='')
+	private function _ban($user_id, $ban_message='')
 	{
+		$data = array(
+			'banned'		=> 1,
+			'ban_message'	=> $ban_message
+			);
 
-		if (empty($users))
-		{
-			return;
-		}
+		$this->user_model->update($user_id, $data);
 
-		$this->auth->restrict('Bonfire.Users.Manage');
-
-		foreach ($users as $user_id)
-		{
-			$data = array(
-				'banned'		=> 1,
-				'ban_message'	=> $ban_message
-				);
-
-			$this->user_model->update($user_id, $data);
-		}
-
-	}//end ban()
+	}//end _ban()
 
 	//--------------------------------------------------------------------
 
 	/**
 	 * Delete a user or group of users
 	 *
-	 * @access public
+	 * @access private
 	 *
-	 * @param array $users Array of users to delete
+	 * @param int $id User to delete
 	 *
 	 * @return void
 	 */
-	public function delete($users=array())
+	private function _delete($id)
 	{
-		// if the users array is empty then get the user from the segment
-		if (empty($users))
+		$user = $this->user_model->find($id);
+
+		if (isset($user) && has_permission('Permissions.'.$user->role_name.'.Manage') && $user->id != $this->current_user->id)
 		{
-			$user_id = $this->uri->segment(5);
-
-			if(!empty($user_id))
+			if ($this->user_model->delete($id))
 			{
-				$users = array($user_id);
-			}
-		}
 
-		if (!empty($users))
-		{
-			$this->auth->restrict('Bonfire.Users.Manage');
-
-			foreach ($users as $id)
-			{
 				$user = $this->user_model->find($id);
-
-				if (isset($user) && has_permission('Permissions.'.$user->role_name.'.Manage') && $user->id != $this->current_user->id)
-				{
-					if ($this->user_model->delete($id))
-					{
-						$this->load->model('activities/Activity_model', 'activity_model');
-
-						$user = $this->user_model->find($id);
-						$log_name = (isset($user->display_name) && !empty($user->display_name)) ? $user->display_name : ($this->settings_lib->item('auth.use_usernames') ? $user->username : $user->email);
-						$this->activity_model->log_activity($this->current_user->id, lang('us_log_delete') . ': '.$log_name, 'users');
-						Template::set_message(lang('us_action_deleted'), 'success');
-					}
-					else
-					{
-						Template::set_message(lang('us_action_not_deleted'). $this->user_model->error, 'error');
-					}
-				}
-				else
-				{
-					if ($user->id == $this->current_user->id)
-					{
-							Template::set_message(lang('us_self_delete'), 'error');
-					}
-					else
-					{
-							Template::set_message(sprintf(lang('us_unauthorized'),$user->role_name), 'error');
-					}
-				}//end if
-			}//end foreach
+				$log_name = (isset($user->display_name) && !empty($user->display_name)) ? $user->display_name : ($this->settings_lib->item('auth.use_usernames') ? $user->username : $user->email);
+				$this->activity_model->log_activity($this->current_user->id, lang('us_log_delete') . ': '.$log_name, 'users');
+				Template::set_message(lang('us_action_deleted'), 'success');
+			}
+			else
+			{
+				Template::set_message(lang('us_action_not_deleted'). $this->user_model->error, 'error');
+			}
 		}
 		else
 		{
-			Template::set_message(lang('us_empty_id'), 'error');
+			if ($user->id == $this->current_user->id)
+			{
+				Template::set_message(lang('us_self_delete'), 'error');
+			}
+			else
+			{
+				Template::set_message(sprintf(lang('us_unauthorized'),$user->role_name), 'error');
+			}
 		}//end if
 
-		redirect(SITE_AREA .'/settings/users');
-
-	}//end delete()
+	}//end _delete()
 
 	//--------------------------------------------------------------------
 
 	/**
 	 * Purge the selected users which are already marked as deleted
 	 *
-	 * @access public
+	 * @access private
 	 *
-	 * @param array $users
+	 * @param int $id User to purge
 	 *
 	 * @return void
 	 */
-	public function purge($users=array())
+	private function _purge($id)
 	{
-		// if the users array is empty then get the user from the segment
-		if (empty($users))
-		{
-			$user_id = $this->uri->segment(5);
+		$this->user_model->delete($id, TRUE);
+		Template::set_message(lang('us_action_purged'), 'success');
 
-			if(!empty($user_id))
-			{
-				$users = array($user_id);
-			}
-		}
-
-		if (!empty($users) && is_array($users))
-		{
-			$this->auth->restrict('Bonfire.Users.Manage');
-
-			foreach ($users as $id)
-			{
-				$this->user_model->delete($id, TRUE);
-			}
-			Template::set_message(lang('us_action_purged'), 'success');
-		}
-		else {
-			Template::set_message(lang('us_empty_id'), 'error');
-		}
-
-		Template::redirect(SITE_AREA .'/settings/users');
-
-	}//end purge()
+	}//end _purge()
 
 	//--------------------------------------------------------------------
 
 	/**
 	 * Restore the deleted user
 	 *
-	 * @access public
+	 * @access private
 	 *
 	 * @return void
 	 */
-	public function restore()
+	private function _restore($id)
 	{
-		$id = $this->uri->segment(5);
-
 		if ($this->user_model->update($id, array('users.deleted'=>0)))
 		{
 			Template::set_message(lang('us_user_restored_success'), 'success');
@@ -508,8 +453,6 @@ class Settings extends Admin_Controller
 		{
 			Template::set_message(lang('us_user_restored_error'). $this->user_model->error, 'error');
 		}
-
-		Template::redirect(SITE_AREA .'/settings/users');
 
 	}//end restore()
 
@@ -543,31 +486,6 @@ class Settings extends Admin_Controller
 
 	//--------------------------------------------------------------------
 	// !PRIVATE METHODS
-	//--------------------------------------------------------------------
-
-	/**
-	 * Callback method to check that the email is unique
-	 *
-	 * @access public
-	 *
-	 * @param string $str The email to check
-	 *
-	 * @return bool
-	 */
-	public function unique_email($str)
-	{
-		if ($this->user_model->is_unique('email', $str))
-		{
-			return TRUE;
-		}
-		else
-		{
-			$this->form_validation->set_message('unique_email', lang('us_email_in_use'));
-			return FALSE;
-		}
-
-	}//end unique_email()
-
 	//--------------------------------------------------------------------
 
 	/**
@@ -622,9 +540,14 @@ class Settings extends Admin_Controller
 
 		foreach ($meta_fields as $field)
 		{
-			$this->form_validation->set_rules($field['name'], $field['label'], $field['rules']);
+			if (!isset($field['admin_only']) || $field['admin_only'] === FALSE
+				|| (isset($field['admin_only']) && $field['admin_only'] === TRUE
+					&& isset($this->current_user) && $this->current_user->role_id == 1))
+			{
+				$this->form_validation->set_rules($field['name'], $field['label'], $field['rules']);
 
-			$meta_data[$field['name']] = $this->input->post($field['name']);
+				$meta_data[$field['name']] = $this->input->post($field['name']);
+			}
 		}
 
 		if ($this->form_validation->run($this) === FALSE)
@@ -713,53 +636,33 @@ class Settings extends Admin_Controller
 	/**
 	 * Activates selected users accounts.
 	 *
-	 * @access public
+	 * @access private
 	 *
-	 * @param array $users Array of User ID ints
+	 * @param int $user_id
 	 *
 	 * @return void
 	 */
-	public function activate($users=false)
+	private function _activate($user_id)
 	{
-		if (!$users)
-		{
-			return;
-		}
+		$this->user_status($user_id,1,0);
 
-		$this->auth->restrict('Bonfire.Users.Manage');
-		foreach ($users as $user_id)
-		{
-			$this->user_status($user_id,1,0);
-		}
-
-	}//end activate()
+	}//end _activate()
 
 	//--------------------------------------------------------------------
-
 	/**
 	 * Deactivates selected users accounts.
 	 *
-	 * @access public
+	 * @access private
 	 *
-	 * @param array $users Array of User ID ints
+	 * @param int $user_id
 	 *
 	 * @return void
 	 */
-	public function deactivate($users=false)
+	private function _deactivate($user_id)
 	{
-		if (!$users)
-		{
-			return;
-		}
+		$this->user_status($user_id,0,0);
 
-		$this->auth->restrict('Bonfire.Users.Manage');
-
-		foreach ($users as $user_id)
-		{
-			$this->user_status($user_id,0,0);
-		}
-
-	}//end deactivate()
+	}//end _deactivate()
 
 	//--------------------------------------------------------------------
 
@@ -769,7 +672,7 @@ class Settings extends Admin_Controller
 	 *
 	 * @access private
 	 *
-	 * @param int  $user_id       User ID int
+	 * @param int $user_id       User ID int
 	 * @param int $status        1 = Activate, -1 = Deactivate
 	 * @param int $supress_email 1 = Supress, All others = send email
 	 *

@@ -79,8 +79,8 @@ class Users extends Front_Controller
 				// Try to login
 				if ($this->auth->login($this->input->post('login'), $this->input->post('password'), $remember) === TRUE)
 				{
-					$this->load->model('activities/Activity_model', 'activity_model');
 
+					// Log the Activity
 					$this->activity_model->log_activity($this->auth->user_id(), lang('us_log_logged').': ' . $this->input->ip_address(), 'users');
 
 					/*
@@ -131,7 +131,7 @@ class Users extends Front_Controller
 	 */
 	public function logout()
 	{
-		$this->load->model('activities/Activity_model', 'activity_model');
+		// Log the Activity
 		$this->activity_model->log_activity($this->current_user->id, lang('us_log_logged_out').': ' . $this->input->ip_address(), 'users');
 
 		$this->auth->logout();
@@ -190,7 +190,7 @@ class Users extends Front_Controller
 
 						$data = array(
 									'to'	=> $_POST['email'],
-									'subject'	=> lang('us_reset_password_email_subject'),
+									'subject'	=> lang('us_reset_pass_subject'),
 									'message'	=> $this->load->view('_emails/forgot_password', array('link' => $pass_link), TRUE)
 							 );
 
@@ -256,13 +256,19 @@ class Users extends Front_Controller
 				$meta_data = array();
 				foreach ($meta_fields as $field)
 				{
-					$meta_data[$field['name']] = $this->input->post($field['name']);
+					if ((!isset($field['admin_only']) || $field['admin_only'] === FALSE
+						|| (isset($field['admin_only']) && $field['admin_only'] === TRUE
+							&& isset($this->current_user) && $this->current_user->role_id == 1))
+						&& (!isset($field['frontend']) || $field['frontend'] === TRUE))
+					{
+						$meta_data[$field['name']] = $this->input->post($field['name']);
+					}
 				}
 
 				// now add the meta is there is meta data
 				$this->user_model->save_meta_for($user_id, $meta_data);
 
-				$this->load->model('activities/Activity_model', 'activity_model');
+				// Log the Activity
 
 				$user = $this->user_model->find($user_id);
 				$log_name = (isset($user->display_name) && !empty($user->display_name)) ? $user->display_name : ($this->settings_lib->item('auth.use_usernames') ? $user->username : $user->email);
@@ -342,7 +348,7 @@ class Users extends Front_Controller
 
 					if ($this->user_model->update($this->input->post('user_id'), $data))
 					{
-						$this->load->model('activities/Activity_model', 'activity_model');
+						// Log the Activity
 
 						$this->activity_model->log_activity($this->input->post('user_id'), lang('us_log_reset') , 'users');
 						Template::set_message(lang('us_reset_password_success'), 'success');
@@ -440,9 +446,15 @@ class Users extends Front_Controller
 			$meta_data = array();
 			foreach ($meta_fields as $field)
 			{
-				$this->form_validation->set_rules($field['name'], $field['label'], $field['rules']);
+				if ((!isset($field['admin_only']) || $field['admin_only'] === FALSE
+					|| (isset($field['admin_only']) && $field['admin_only'] === TRUE
+						&& isset($this->current_user) && $this->current_user->role_id == 1))
+					&& (!isset($field['frontend']) || $field['frontend'] === TRUE))
+				{
+					$this->form_validation->set_rules($field['name'], $field['label'], $field['rules']);
 
-				$meta_data[$field['name']] = $this->input->post($field['name']);
+					$meta_data[$field['name']] = $this->input->post($field['name']);
+				}
 			}
 
 			if ($this->form_validation->run($this) !== FALSE)
@@ -564,7 +576,7 @@ class Users extends Front_Controller
 
 					Template::set_message($message, $type);
 
-					$this->load->model('activities/Activity_model', 'activity_model');
+					// Log the Activity
 
 					$this->activity_model->log_activity($user_id, lang('us_log_register') , 'users');
 					Template::redirect('login');
@@ -594,57 +606,6 @@ class Users extends Front_Controller
 		Template::render();
 
 	}//end register()
-
-	//--------------------------------------------------------------------
-
-	/**
-	 * Callback method to check that the email is unique
-	 *
-	 * @access public
-	 *
-	 * @param string $email The email address to check
-	 *
-	 * @return bool
-	 */
-	public function unique_email($email)
-	{
-		if ($this->user_model->is_unique('email', $email) === TRUE)
-		{
-			return TRUE;
-		}
-		else
-		{
-			$this->form_validation->set_message('unique_email', 'lang:us_email_already_used');
-			return FALSE;
-		}
-
-	}//end unique_email()
-
-	//--------------------------------------------------------------------
-
-	/**
-	 * Callback method to check that the username is unique
-	 *
-	 * @access public
-	 *
-	 * @param string $username The username to check
-	 *
-	 * @return bool
-	 */
-	public function unique_username($username)
-	{
-
-		if ($this->user_model->is_unique('username', $username.',users.id') === TRUE)
-		{
-			return TRUE;
-		}
-		else
-		{
-			$this->form_validation->set_message('unique_username', 'lang:us_username_already_used');
-			return FALSE;
-		}
-
-	}//end unique_username()
 
 	//--------------------------------------------------------------------
 
@@ -700,12 +661,15 @@ class Users extends Front_Controller
 		Events::trigger('before_user_validation', $payload );
 
 
-		$meta_data = array();
 		foreach ($meta_fields as $field)
 		{
-			$this->form_validation->set_rules($field['name'], $field['label'], $field['rules']);
-
-			$meta_data[$field['name']] = $this->input->post($field['name']);
+			if ((!isset($field['admin_only']) || $field['admin_only'] === FALSE
+				|| (isset($field['admin_only']) && $field['admin_only'] === TRUE
+					&& isset($this->current_user) && $this->current_user->role_id == 1))
+				&& (!isset($field['frontend']) || $field['frontend'] === TRUE))
+			{
+				$this->form_validation->set_rules($field['name'], $field['label'], $field['rules']);
+			}
 		}
 
 
@@ -843,7 +807,7 @@ class Users extends Front_Controller
 		{
 			if (isset($_POST['submit']))
 			{
-				$this->form_validation->set_rules('email', 'Email', 'required|trim|strip_tags|valid_email|xss_clean');
+				$this->form_validation->set_rules('email', 'lang:bf_email', 'required|trim|strip_tags|valid_email|xss_clean');
 
 				if ($this->form_validation->run() === FALSE)
 				{

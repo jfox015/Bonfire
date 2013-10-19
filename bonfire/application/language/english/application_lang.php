@@ -137,7 +137,6 @@ $lang['bf_password_show_labels']	    = 'Display password validation labels';
 
 $lang['bf_user']				= 'User';
 $lang['bf_users']				= 'Users';
-$lang['bf_username']			= 'Username';
 $lang['bf_description']			= 'Description';
 $lang['bf_email']				= 'Email';
 $lang['bf_user_settings']		= 'My Profile';
@@ -169,12 +168,12 @@ $lang['bf_model_bad_select']	= 'Invalid selection.';
 // Contexts
 //--------------------------------------------------------------------
 $lang['bf_no_contexts']			= 'The contexts array is not properly setup. Check your application config file.';
-$lang['bf_default_context']		= 'Default Context';
 $lang['bf_context_content']		= 'Content';
 $lang['bf_context_reports']		= 'Reports';
 $lang['bf_context_settings']	= 'Settings';
 $lang['bf_context_developer']	= 'Developer';
 $lang['bf_context_custom']		= 'Custom';
+
 //--------------------------------------------------------------------
 // Activities
 //--------------------------------------------------------------------

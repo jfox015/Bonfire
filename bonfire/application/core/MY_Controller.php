@@ -72,6 +72,9 @@ class Base_Controller extends MX_Controller
 
 		parent::__construct();
 
+		// Load Activity Model Since it's used everywhere.
+		$this->load->model('activities/Activity_model', 'activity_model');
+
 		// Auth setup
 		$this->load->model('users/User_model', 'user_model');
 		$this->load->library('users/auth');
@@ -81,7 +84,7 @@ class Base_Controller extends MX_Controller
 		{
 			$this->current_user = $this->user_model->find($this->auth->user_id());
 			$this->current_user->id = (int)$this->current_user->id;
-			$this->current_user->user_img = gravatar_link($this->current_user->email, 22, $this->current_user->email, "{$this->current_user->email} Profile", ' ', ' ' );
+			$this->current_user->user_img = gravatar_link($this->current_user->email, 22, $this->current_user->email, "{$this->current_user->email} Profile");
 
 			// if the user has a language setting then use it
 			if (isset($this->current_user->language))
@@ -127,14 +130,14 @@ class Base_Controller extends MX_Controller
 
 			}
 
-			// Auto-migrate our core and/or app to latest version.
-			if ($this->config->item('migrate.auto_core') || $this->config->item('migrate.auto_app'))
-			{
-				$this->load->library('migrations/migrations');
-				$this->migrations->auto_latest();
-			}
-
 			$this->load->driver('cache', array('adapter' => 'dummy'));
+		}
+
+		// Auto-migrate our core and/or app to latest version.
+		if ($this->config->item('migrate.auto_core') || $this->config->item('migrate.auto_app'))
+		{
+			$this->load->library('migrations/migrations');
+			$this->migrations->auto_latest();
 		}
 
 		// Make sure no assets in up as a requested page or a 404 page.
@@ -187,11 +190,6 @@ class Front_Controller extends Base_Controller
 
 		Template::set_theme($this->config->item('default_theme'));
 
-        // Get the site title from settings to use in <title> and Headers by default
-        $settings = $this->settings_lib->find_all_by('name','site.title');
-        Template::set('site_title',$settings['site.title']);
-        unset($settings);
-
 		Events::trigger('after_front_controller');
 	}//end __construct()
 
@@ -235,7 +233,7 @@ class Authenticated_Controller extends Base_Controller
 		$this->load->library('form_validation');
 		$this->form_validation->set_error_delimiters('', '');
 		$this->form_validation->CI =& $this;	// Hack to make it work properly with HMVC
-		
+
 		Template::set_theme($this->config->item('default_theme'));
 	}//end construct()
 

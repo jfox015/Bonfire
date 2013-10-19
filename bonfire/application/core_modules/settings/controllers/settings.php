@@ -81,8 +81,6 @@ class Settings extends Admin_Controller
 		$settings = $this->settings_lib->find_all();
 		Template::set('settings', $settings);
 
-		Template::set('contexts', list_contexts(true));
-		
 		// Get the possible languages
 		$this->load->helper('translate/languages');
 		Template::set('languages', list_languages());
@@ -113,7 +111,6 @@ class Settings extends Admin_Controller
 		$this->form_validation->set_rules('title', 'lang:bf_site_name', 'required|trim|strip_tags|xss_clean');
 		$this->form_validation->set_rules('system_email', 'lang:bf_site_email', 'required|trim|strip_tags|valid_email|xss_clean');
 		$this->form_validation->set_rules('list_limit','Items <em>p.p.</em>', 'required|trim|strip_tags|numeric|xss_clean');
-
 		$this->form_validation->set_rules('password_min_length','lang:bf_password_length', 'required|trim|strip_tags|numeric|xss_clean');
 		$this->form_validation->set_rules('password_force_numbers', 'lang:bf_password_force_numbers', 'trim|strip_tags|numeric|xss_clean');
 		$this->form_validation->set_rules('password_force_symbols', 'lang:bf_password_force_symbols', 'trim|strip_tags|numeric|xss_clean');
@@ -154,6 +151,7 @@ class Settings extends Admin_Controller
 			array('name' => 'site.show_front_profiler', 'value' => isset($_POST['show_front_profiler']) ? 1 : 0),
 			array('name' => 'site.languages', 'value' => $this->input->post('languages') != '' ? serialize($this->input->post('languages')) : ''),
 
+
 		);
 
 		//destroy the saved update message in case they changed update preferences.
@@ -163,8 +161,6 @@ class Settings extends Admin_Controller
 		}
 
 		// Log the activity
-		$this->load->model('activities/Activity_model', 'activity_model');
-
 		$this->activity_model->log_activity($this->current_user->id, lang('bf_act_settings_saved').': ' . $this->input->ip_address(), 'core');
 
 		// save the settings to the DB

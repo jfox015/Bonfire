@@ -34,7 +34,7 @@
 <div class="row-fluid">
 	<div class="span12">
 
-<?php echo form_open('login', 'class="form-horizontal"'); ?>
+<?php echo form_open('login', array('class' => "form-horizontal", 'autocomplete' => 'off')); ?>
 
 	<div class="control-group <?php echo iif( form_error('login') , 'error') ;?>">
 		<label class="control-label" for="login_value"><?php echo $this->settings_lib->item('auth.login_type') == 'both' ? lang('bf_login_type_both') : ucwords($this->settings_lib->item('auth.login_type')) ?></label>
@@ -52,9 +52,8 @@
 
 	<?php if ($this->settings_lib->item('auth.allow_remember')) : ?>
 		<div class="control-group">
-			<label class="control-label" for="remember_me">&nbsp;</label>
 			<div class="controls">
-				<label class="checkbox">
+				<label class="checkbox" for="remember_me">
 					<input type="checkbox" name="remember_me" id="remember_me" value="1" tabindex="3" />
 					<span class="inline-help"><?php echo lang('us_remember_note'); ?></span>
 				</label>
@@ -63,7 +62,6 @@
 	<?php endif; ?>
 
 	<div class="control-group">
-		<label class="control-label" for="submit">&nbsp;</label>
 		<div class="controls">
 			<input class="btn btn-primary" type="submit" name="submit" id="submit" value="Let Me In" tabindex="5" />
 		</div>
