@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8" />
 
-	<title><?php echo config_item('site.title'); ?></title>
+	<title><?php e($this->settings_lib->item('site.title')); ?></title>
 
 	<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
 
@@ -24,12 +24,11 @@
 		<!-- Header -->
 		<div class="head text-left">
 			<h1><?php
-                if (isset($site_title) && !empty($site_title)) {
-                    echo $site_title;
-                } else {
-                    echo config_item('site.title');
-                } ?></h1>
-            <div class="title"><?php echo $site_title; ?></div>
+                if (!isset($site_title) || !empty($site_title)) {
+                    $site_title = "Unknown Site Name";
+                } 
+				echo $site_title; 
+				?></h1>
 		</div>
 		
 		<div class="nav">
