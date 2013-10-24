@@ -23,12 +23,12 @@
 
 		<!-- Header -->
 		<div class="head text-left">
-			<h1><?php
-                if (!isset($site_title) || !empty($site_title)) {
+			<?php
+                if (!isset($site_title) || empty($site_title)) {
                     $site_title = "Unknown Site Name";
                 } 
-				echo $site_title; 
-				?></h1>
+			?> <h1><?php echo $site_title; ?></h1>
+			<div class="title"><?php echo $site_title; ?></div>
 		</div>
 		
 		<div class="nav">

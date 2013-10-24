@@ -8,7 +8,7 @@ class Custom extends Admin_Controller {
 	{
 		parent::__construct();
 		
-		Template::set('toolbar_title', 'OOTP Open Web Platform');
+		Template::set('toolbar_title', 'Fox Open Sports Platform');
 		$this->auth->restrict('Site.Custom.View');
 		
 	}
